@@ -6,10 +6,17 @@ def cmp_image(img1,img2):
     return list(img1.getdata()) == list(img2.getdata())
 
 def crop_white_space(img):
-    gg = Image.new('RGB', (img.size[0], 9))
     ss = img.crop((3,6,img.size[0]-7,15))
+    gg = Image.new('RGB', (ss.size[0], ss.size[1]))
     gg.paste(ss)
-    gg.save(img + '_crop.png', 'PNG')
+#    gg.save(img.filename[:-4] + '_crop.png', 'PNG')
+    return gg
+
+def test_crop(img):
+    ss = img.crop((58,0,62,9))
+    gg = Image.new('RGB', (ss.size[0], ss.size[1]))
+    gg.paste(ss)
+    gg.save(img.filename[:-4] + '_crop.png', 'PNG')
 
 def decodeImage(input_img):
     global letter_image
@@ -26,11 +33,23 @@ def decodeImage(input_img):
                 break
         start_point += letter_image.size[0]
         res += letter
-    return res
+    return res.replace('_', '')
+
+def decodeImageToData(image_name):
+    crop_image = crop_white_space(Image.open(image_name))
+    phone_number = decodeImage(crop_image)
+    name = image_name.split('__')[0].split('/')[1]
+    return name, phone_number
 
 
-crop_white_space(Image.open(r"tmp_image.png"))
-print decodeImage(Image.open(r"2_ryada.png"))
-#img = Image.open(r"slando_all.png")
-#crop_white_space(Image.open(r"tmp_image.png"))
-#print decode(Image.open(r"slando_all1.png"))
+def decodeAllDirImagesToData(images_directory):
+    d = {}
+    for image_name in os.listdir(images_directory):
+        if not image_name.startswith('.'):
+            d[decodeImageToData(images_directory + image_name)[0]] = decodeImageToData(images_directory + image_name)[1]
+    return d
+
+#test_crop(Image.open(r'input/probel_crop.png'))
+#crop_white_space(Image.open(r"input/Roman__3fnj.png"))
+#print decodeImage(Image.open(r"input/probel_crop.png"))
+decodeAllDirImagesToData('test/')
